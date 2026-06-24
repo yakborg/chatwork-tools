@@ -48,6 +48,10 @@ export interface CreateTaskResponse {
   task_ids: number[];
 }
 
+export interface UploadFileResponse {
+  file_id: number;
+}
+
 export interface WebhookPayload {
   webhook_setting_id: string;
   webhook_event_type: string;

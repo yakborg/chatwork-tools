@@ -4,6 +4,7 @@ import type {
   Room,
   SendMessageResponse,
   Task,
+  UploadFileResponse,
 } from "./types.ts";
 
 const BASE_URL = "https://api.chatwork.com/v2";
@@ -75,5 +76,23 @@ export async function createTask(
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: params.toString(),
+  });
+}
+
+export async function uploadFile(
+  roomId: string,
+  fileContent: Uint8Array,
+  filename: string,
+  message?: string,
+): Promise<UploadFileResponse> {
+  const form = new FormData();
+  // Content-Type は手動指定しない。fetch が boundary 付きで自動設定する。
+  form.append("file", new Blob([new Uint8Array(fileContent)]), filename);
+  if (message) {
+    form.append("message", message);
+  }
+  return request<UploadFileResponse>(`/rooms/${roomId}/files`, {
+    method: "POST",
+    body: form,
   });
 }

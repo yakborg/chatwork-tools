@@ -39,6 +39,9 @@ pnpm cli messages --room 123456
 # メッセージ送信
 pnpm cli send --room 123456 --message "Hello, World!"
 
+# ファイル添付送信（--name で表示ファイル名を上書き、--message で添付メッセージ）
+pnpm cli send:file --room 123456 --file ./report.csv --message "本日のレポート"
+
 # タスク一覧
 pnpm cli tasks --room 123456
 
@@ -58,6 +61,7 @@ pnpm cli rooms --json
 | `get_rooms` | ルーム一覧取得 | なし |
 | `get_messages` | メッセージ取得 | `roomId` |
 | `send_message` | メッセージ送信 | `roomId`, `message` |
+| `send_file` | ファイル添付送信 | `roomId` ＋ `filePath` または（`content`(base64)＋`filename`） |
 | `get_tasks` | タスク一覧取得 | `roomId` |
 | `create_task` | タスク作成 | `roomId`, `body` |
 
