@@ -5,7 +5,7 @@ export async function messagesCommand(
 ): Promise<void> {
   if (!args.room) {
     console.error("Error: --room <roomId> is required");
-    Deno.exit(1);
+    process.exit(1);
   }
 
   const messages = await getMessages(String(args.room));

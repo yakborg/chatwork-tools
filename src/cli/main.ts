@@ -1,16 +1,23 @@
-import { parseArgs } from "jsr:@std/cli/parse-args";
+import { parseArgs } from "node:util";
 import { messagesCommand } from "./commands/messages.ts";
 import { roomsCommand } from "./commands/rooms.ts";
 import { sendCommand } from "./commands/send.ts";
 import { taskCreateCommand, tasksCommand } from "./commands/tasks.ts";
 
-const args = parseArgs(Deno.args, {
-  string: ["room", "message", "body", "assignees"],
-  boolean: ["json", "help"],
-  alias: { h: "help" },
+const { values: args, positionals } = parseArgs({
+  args: process.argv.slice(2),
+  options: {
+    room: { type: "string" },
+    message: { type: "string" },
+    body: { type: "string" },
+    assignees: { type: "string" },
+    json: { type: "boolean" },
+    help: { type: "boolean", short: "h" },
+  },
+  allowPositionals: true,
 });
 
-const command = args._[0] as string | undefined;
+const command = positionals[0] as string | undefined;
 
 if (!command || args.help) {
   console.log(`Chatwork CLI
@@ -29,10 +36,10 @@ Options:
   --json    Output as JSON
   --help    Show this help
 `);
-  Deno.exit(0);
+  process.exit(0);
 }
 
-try {
+async function main(): Promise<void> {
   switch (command) {
     case "rooms":
       await roomsCommand(args);
@@ -51,9 +58,11 @@ try {
       break;
     default:
       console.error(`Unknown command: ${command}`);
-      Deno.exit(1);
+      process.exit(1);
   }
-} catch (err) {
-  console.error(`Error: ${err instanceof Error ? err.message : String(err)}`);
-  Deno.exit(1);
 }
+
+main().catch((err) => {
+  console.error(`Error: ${err instanceof Error ? err.message : String(err)}`);
+  process.exit(1);
+});

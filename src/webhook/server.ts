@@ -1,12 +1,14 @@
-import Anthropic from "npm:@anthropic-ai/sdk";
+import { serve } from "@hono/node-server";
+import Anthropic from "@anthropic-ai/sdk";
+import { Hono } from "hono";
 import { sendMessage } from "../api.ts";
 import type { WebhookPayload } from "../types.ts";
 
 const anthropic = new Anthropic({
-  apiKey: Deno.env.get("ANTHROPIC_API_KEY"),
+  apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
-const PORT = parseInt(Deno.env.get("WEBHOOK_PORT") ?? "3000", 10);
+const PORT = parseInt(process.env.WEBHOOK_PORT ?? "3000", 10);
 
 async function handleWebhook(req: Request): Promise<Response> {
   let payload: WebhookPayload;
@@ -27,7 +29,7 @@ async function handleWebhook(req: Request): Promise<Response> {
 
   try {
     const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-20250514",
+      model: "claude-sonnet-4-6",
       max_tokens: 1024,
       messages: [{ role: "user", content: userMessage }],
     });
@@ -46,20 +48,12 @@ async function handleWebhook(req: Request): Promise<Response> {
   return new Response("OK", { status: 200 });
 }
 
-Deno.serve({ port: PORT }, async (req: Request) => {
-  const url = new URL(req.url);
+const app = new Hono();
 
-  if (url.pathname === "/health" && req.method === "GET") {
-    return new Response(JSON.stringify({ status: "ok" }), {
-      headers: { "Content-Type": "application/json" },
-    });
-  }
+app.get("/health", (c) => c.json({ status: "ok" }));
 
-  if (url.pathname === "/webhook" && req.method === "POST") {
-    return await handleWebhook(req);
-  }
+app.post("/webhook", (c) => handleWebhook(c.req.raw));
 
-  return new Response("Not Found", { status: 404 });
+serve({ fetch: app.fetch, port: PORT }, () => {
+  console.log(`Webhook server listening on port ${PORT}`);
 });
-
-console.log(`Webhook server listening on port ${PORT}`);

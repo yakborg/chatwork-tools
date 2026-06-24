@@ -5,7 +5,7 @@ export async function tasksCommand(
 ): Promise<void> {
   if (!args.room) {
     console.error("Error: --room <roomId> is required");
-    Deno.exit(1);
+    process.exit(1);
   }
 
   const tasks = await getTasks(String(args.room));
@@ -32,11 +32,11 @@ export async function taskCreateCommand(
 ): Promise<void> {
   if (!args.room) {
     console.error("Error: --room <roomId> is required");
-    Deno.exit(1);
+    process.exit(1);
   }
   if (!args.body) {
     console.error("Error: --body <text> is required");
-    Deno.exit(1);
+    process.exit(1);
   }
 
   const assigneeIds = args.assignees
