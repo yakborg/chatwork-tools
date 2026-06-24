@@ -1,7 +1,7 @@
 import { parseArgs } from "node:util";
 import { messagesCommand } from "./commands/messages.ts";
 import { roomsCommand } from "./commands/rooms.ts";
-import { sendCommand } from "./commands/send.ts";
+import { sendCommand, sendFileCommand } from "./commands/send.ts";
 import { taskCreateCommand, tasksCommand } from "./commands/tasks.ts";
 
 const { values: args, positionals } = parseArgs({
@@ -11,6 +11,8 @@ const { values: args, positionals } = parseArgs({
     message: { type: "string" },
     body: { type: "string" },
     assignees: { type: "string" },
+    file: { type: "string" },
+    name: { type: "string" },
     json: { type: "boolean" },
     help: { type: "boolean", short: "h" },
   },
@@ -29,6 +31,7 @@ Commands:
   rooms                              List rooms
   messages --room <roomId>           Get messages
   send --room <roomId> --message <text>  Send a message
+  send:file --room <roomId> --file <path> [--name <filename>] [--message <text>]  Upload a file
   tasks --room <roomId>              List tasks
   task:create --room <roomId> --body <text> [--assignees <id1,id2>]  Create a task
 
@@ -49,6 +52,9 @@ async function main(): Promise<void> {
       break;
     case "send":
       await sendCommand(args);
+      break;
+    case "send:file":
+      await sendFileCommand(args);
       break;
     case "tasks":
       await tasksCommand(args);

@@ -4,12 +4,15 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
+import { readFile } from "node:fs/promises";
+import { basename } from "node:path";
 import {
   createTask,
   getMessages,
   getRooms,
   getTasks,
   sendMessage,
+  uploadFile,
 } from "../api.ts";
 
 const server = new Server(
@@ -45,6 +48,35 @@ server.setRequestHandler(ListToolsRequestSchema, () => ({
           message: { type: "string", description: "Message body" },
         },
         required: ["roomId", "message"],
+      },
+    },
+    {
+      name: "send_file",
+      description:
+        "Upload a file to a Chatwork room. Provide either filePath (read from disk) or content (base64) + filename.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          roomId: { type: "string", description: "Room ID" },
+          filePath: {
+            type: "string",
+            description: "Path to the file to upload",
+          },
+          content: {
+            type: "string",
+            description: "Base64-encoded file content (alternative to filePath)",
+          },
+          filename: {
+            type: "string",
+            description:
+              "File name. Required with content; overrides the basename when using filePath",
+          },
+          message: {
+            type: "string",
+            description: "Optional message to attach with the file",
+          },
+        },
+        required: ["roomId"],
       },
     },
     {
@@ -95,6 +127,32 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
       case "send_message": {
         const { roomId, message } = input as { roomId: string; message: string };
         const result = await sendMessage(roomId, message);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      }
+      case "send_file": {
+        const { roomId, filePath, content, filename, message } = input as {
+          roomId: string;
+          filePath?: string;
+          content?: string;
+          filename?: string;
+          message?: string;
+        };
+
+        let fileContent: Uint8Array;
+        let name: string;
+        if (filePath) {
+          fileContent = await readFile(filePath);
+          name = filename ?? basename(filePath);
+        } else if (content && filename) {
+          fileContent = Buffer.from(content, "base64");
+          name = filename;
+        } else {
+          throw new Error(
+            "send_file requires filePath, or content together with filename",
+          );
+        }
+
+        const result = await uploadFile(roomId, fileContent, name, message);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       }
       case "get_tasks": {

@@ -4,6 +4,7 @@ import {
   getMessages,
   getRooms,
   sendMessage,
+  uploadFile,
 } from "../src/api.ts";
 
 const BASE_URL = "https://api.chatwork.com/v2";
@@ -69,6 +70,40 @@ describe("api", () => {
 
     const init = fetchMock.mock.calls[0][1] as RequestInit;
     expect(init.body).toBe("body=do+it&to_ids=111&to_ids=222");
+  });
+
+  it("uploadFile POSTs multipart form-data without a manual Content-Type", async () => {
+    const fetchMock = mockFetch({ file_id: 42 });
+    const res = await uploadFile(
+      "123",
+      new Uint8Array([1, 2, 3]),
+      "report.csv",
+      "今日のレポート",
+    );
+
+    expect(res).toEqual({ file_id: 42 });
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe(`${BASE_URL}/rooms/123/files`);
+    expect(init.method).toBe("POST");
+    expect(init.body).toBeInstanceOf(FormData);
+
+    const form = init.body as FormData;
+    expect(form.get("message")).toBe("今日のレポート");
+    const file = form.get("file");
+    expect(file).toBeInstanceOf(Blob);
+    expect((file as File).name).toBe("report.csv");
+
+    // boundary は fetch が付与するため Content-Type を手で設定しないこと
+    const headers = init.headers as Record<string, string>;
+    expect(headers["Content-Type"]).toBeUndefined();
+  });
+
+  it("uploadFile omits the message field when none is given", async () => {
+    const fetchMock = mockFetch({ file_id: 7 });
+    await uploadFile("123", new Uint8Array([0]), "a.bin");
+
+    const form = (fetchMock.mock.calls[0][1] as RequestInit).body as FormData;
+    expect(form.get("message")).toBeNull();
   });
 
   it("throws on a non-ok response", async () => {
