@@ -9,10 +9,10 @@ import type {
 const BASE_URL = "https://api.chatwork.com/v2";
 
 function getToken(): string {
-  const token = Deno.env.get("CHATWORK_API_TOKEN");
+  const token = process.env.CHATWORK_API_TOKEN;
   if (!token) {
     console.error("Error: CHATWORK_API_TOKEN is not set.");
-    Deno.exit(1);
+    process.exit(1);
   }
   return token;
 }

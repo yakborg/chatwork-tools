@@ -1,19 +1,22 @@
 # chatwork-tools
 
-Deno + TypeScript で Chatwork API を扱うツールセット。
+Node LTS + TypeScript で Chatwork API を扱うツールセット。
 CLI・MCPサーバー・Webhookサーバーを同一パッケージで管理します。
 
 ## セットアップ
 
-### Deno のインストール（mise 経由）
+### 前提
+
+- Node.js LTS（>=20、推奨 22）
+- pnpm（`corepack enable pnpm` で有効化可能）
 
 ```bash
-mise use -g deno@latest
+pnpm install
 ```
 
 ### 環境変数の設定
 
-`~/.zshenv` に以下を追記してください：
+`~/.zshenv` などに以下を設定してください：
 
 ```sh
 export CHATWORK_API_TOKEN=your_token_here
@@ -28,31 +31,22 @@ Chatwork API トークンは [Chatwork 設定画面](https://www.chatwork.com/#s
 
 ```bash
 # ルーム一覧
-deno task cli rooms
+pnpm cli rooms
 
 # メッセージ取得
-deno task cli messages --room 123456
+pnpm cli messages --room 123456
 
 # メッセージ送信
-deno task cli send --room 123456 --message "Hello, World!"
+pnpm cli send --room 123456 --message "Hello, World!"
 
 # タスク一覧
-deno task cli tasks --room 123456
+pnpm cli tasks --room 123456
 
 # タスク作成
-deno task cli task:create --room 123456 --body "タスクの内容" --assignees 111,222
+pnpm cli task:create --room 123456 --body "タスクの内容" --assignees 111,222
 
 # JSON出力
-deno task cli rooms --json
-```
-
-### バイナリのコンパイル
-
-```bash
-deno task compile
-# → bin/cw として出力される
-
-./bin/cw rooms
+pnpm cli rooms --json
 ```
 
 ## MCPサーバー
@@ -75,8 +69,8 @@ deno task compile
 {
   "mcpServers": {
     "chatwork": {
-      "command": "deno",
-      "args": ["run", "--allow-net", "--allow-env", "/home/noda/projects/chatwork-tools/src/mcp/server.ts"],
+      "command": "pnpm",
+      "args": ["--dir", "/home/noda/dev/chatwork-tools", "-s", "mcp"],
       "env": {
         "CHATWORK_API_TOKEN": "${CHATWORK_API_TOKEN}"
       }
@@ -85,14 +79,18 @@ deno task compile
 }
 ```
 
+`tsx` を使わず単一ファイルで起動したい場合は、後述の `pnpm build` 後に
+`node /home/noda/dev/chatwork-tools/dist/mcp/server.cjs` を `command`/`args` に指定します。
+
 ## Webhookサーバー
 
-受信したメッセージを Claude API (claude-sonnet-4-20250514) に投げて自動返信します。
+受信したメッセージを Claude API (claude-sonnet-4-6) に投げて自動返信します。
+HTTP は Hono + @hono/node-server で動作します。
 
 ### 起動
 
 ```bash
-deno task webhook
+pnpm webhook
 # → ポート 3000 で起動（WEBHOOK_PORT 環境変数で変更可能）
 ```
 
@@ -105,7 +103,7 @@ deno task webhook
 
 ```bash
 # ターミナル1: Webhookサーバー起動
-deno task webhook
+pnpm webhook
 
 # ターミナル2: ngrok で外部公開
 ngrok http 3000
@@ -118,3 +116,29 @@ ngrok が表示した URL（例: `https://xxxx.ngrok.io`）を Chatwork の Webh
 2. Webhook URL: `https://xxxx.ngrok.io/webhook`
 3. イベント: 「メッセージ作成」を選択
 4. 監視するルームを選択して保存
+
+## ビルド
+
+### バンドル（CJS 単一ファイル）
+
+```bash
+pnpm build
+# → dist/cli/main.cjs, dist/mcp/server.cjs, dist/webhook/server.cjs を出力
+```
+
+### Windows 向け standalone exe
+
+MCP サーバーを Windows 用の単一実行ファイルにします（@yao-pkg/pkg）。
+
+```bash
+pnpm build        # 先に dist を生成
+pnpm build:exe
+# → bin/chatwork-mcp.exe（node22-win-x64）を出力
+```
+
+## 開発
+
+```bash
+pnpm typecheck    # tsc --noEmit（strict）
+pnpm test         # vitest
+```

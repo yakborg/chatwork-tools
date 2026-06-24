@@ -1,8 +1,0 @@
-{
-  "tasks": {
-    "cli":     "deno run --allow-net --allow-env src/cli/main.ts",
-    "mcp":     "deno run --allow-net --allow-env src/mcp/server.ts",
-    "webhook": "deno run --allow-net --allow-env src/webhook/server.ts",
-    "compile": "deno compile --allow-net --allow-env --output bin/cw src/cli/main.ts"
-  }
-}
