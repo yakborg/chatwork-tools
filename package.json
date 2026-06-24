@@ -13,7 +13,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "build": "tsup",
-    "build:exe": "pkg dist/mcp/server.cjs --targets node22-win-x64 --output bin/chatwork-mcp.exe"
+    "build:exe": "pkg dist/mcp/server.cjs --targets node22-win-x64 --public --public-packages \"*\" --output bin/chatwork-mcp.exe"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.105.0",
