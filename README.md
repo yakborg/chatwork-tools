@@ -86,6 +86,8 @@ pnpm cli rooms --json
 `tsx` を使わず単一ファイルで起動したい場合は、後述の `pnpm build` 後に
 `node /home/noda/dev/chatwork-tools/dist/mcp/server.cjs` を `command`/`args` に指定します。
 
+Windows で standalone exe + Credential Manager 方式で配布する場合は [docs/windows-setup.md](docs/windows-setup.md) を参照してください。
+
 ## Webhookサーバー
 
 受信したメッセージを Claude API (claude-sonnet-4-6) に投げて自動返信します。
