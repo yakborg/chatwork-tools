@@ -1,6 +1,6 @@
 ---
 name: chatwork-adapter
-description: Chatwork への送信（POST）および Webhook 受信処理を実装するときに使う。Chatwork API トークン認証、メッセージ投稿、Webhook ペイロード検証、Chatwork 記法フォーマットを扱う全ての場面で参照すること。TypeScript (Deno) 前提。
+description: Chatwork への送信（POST）を実装するときに使う。Chatwork API トークン認証、メッセージ投稿、Chatwork 記法フォーマットを扱う全ての場面で参照すること。TypeScript (Deno) 前提。
 ---
 
 # Chatwork Adapter
@@ -11,16 +11,9 @@ Chatwork API との送受信を担うアダプター層の実装ガイド。ロ�
 
 ```
 CHATWORK_API_TOKEN      # Chatwork API トークン
-CHATWORK_WEBHOOK_TOKEN  # Webhook 検証トークン（Phase 2 のみ）
 ```
 
 `.env` に記載し、`Deno.env.get()` で取得する。絶対にコードに直書きしない。
-
-## 固定値
-
-```
-CHATWORK_ROOM_ID = 427668350  # GA Chatwork Reporter 投稿先ルーム
-```
 
 ---
 
@@ -109,50 +102,7 @@ export function formatDailyReport(data: {
 
 ---
 
-## Webhook 受信（Phase 2）
-
-### Deno Deploy + Hono でのハンドラ例
-
-```typescript
-import { Hono } from "hono";
-
-const app = new Hono();
-
-app.post("/webhook/chatwork", async (c) => {
-  // Chatwork は署名検証なし。代わりにトークンをクエリパラメータで受け取る運用が多い
-  const token = c.req.query("token");
-  if (token !== Deno.env.get("CHATWORK_WEBHOOK_TOKEN")) {
-    return c.text("Unauthorized", 401);
-  }
-
-  const payload = await c.req.json<ChatworkWebhookPayload>();
-  const message = payload.webhook_event.body;
-  const roomId = String(payload.webhook_event.room_id);
-
-  // ここでは受け取るだけ。処理は agent 層に委譲する
-  return { message, roomId };
-});
-
-export default app;
-```
-
-### Webhook ペイロード型定義
-
-```typescript
-export interface ChatworkWebhookPayload {
-  webhook_setting_id: string;
-  webhook_event_type: "mention_to_me" | "message_created";
-  webhook_event_time: number;
-  webhook_event: {
-    message_id: string;
-    room_id: number;
-    account_id: number;
-    body: string;
-    send_time: number;
-    update_time: number;
-  };
-}
-```
+Phase 2（Webhook 受信）は ga-chatwork-reporter 廃止（2026-08-19）により取り下げ。
 
 ---
 
