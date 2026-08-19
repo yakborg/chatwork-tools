@@ -40,7 +40,7 @@ Content-Type: application/x-www-form-urlencoded
 // src/adapters/chatwork.ts
 
 const CHATWORK_API_BASE = "https://api.chatwork.com/v2";
-const ROOM_ID = "427668350"; // GA Chatwork Reporter 投稿先ルーム（固定）
+const ROOM_ID = "<room_id>"; // 投稿先ルーム ID
 
 export async function postMessage(body: string): Promise<void> {
   const token = Deno.env.get("CHATWORK_API_TOKEN");

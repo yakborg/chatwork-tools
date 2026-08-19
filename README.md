@@ -1,7 +1,7 @@
 # chatwork-tools
 
 Node LTS + TypeScript で Chatwork API を扱うツールセット。
-CLI・MCPサーバー・Webhookサーバーを同一パッケージで管理します。
+CLI・MCPサーバーを同一パッケージで管理します。
 
 ## セットアップ
 
@@ -128,48 +128,13 @@ pnpm cli rooms --json
 
 Windows で standalone exe + Credential Manager 方式で配布する場合は [docs/windows-setup.md](docs/windows-setup.md) を参照してください。
 
-## Webhookサーバー
-
-受信したメッセージを Claude API (claude-sonnet-4-6) に投げて自動返信します。
-HTTP は Hono + @hono/node-server で動作します。
-
-### 起動
-
-```bash
-pnpm webhook
-# → ポート 3000 で起動（WEBHOOK_PORT 環境変数で変更可能）
-```
-
-### エンドポイント
-
-- `POST /webhook` — Chatwork Webhook イベント受信
-- `GET /health` — ヘルスチェック
-
-### ngrok との連携
-
-```bash
-# ターミナル1: Webhookサーバー起動
-pnpm webhook
-
-# ターミナル2: ngrok で外部公開
-ngrok http 3000
-```
-
-ngrok が表示した URL（例: `https://xxxx.ngrok.io`）を Chatwork の Webhook 設定に登録します。
-
-**Chatwork Webhook 設定手順：**
-1. Chatwork 管理画面 → インテグレーション → Webhook
-2. Webhook URL: `https://xxxx.ngrok.io/webhook`
-3. イベント: 「メッセージ作成」を選択
-4. 監視するルームを選択して保存
-
 ## ビルド
 
 ### バンドル（CJS 単一ファイル）
 
 ```bash
 pnpm build
-# → dist/cli/main.cjs, dist/mcp/server.cjs, dist/webhook/server.cjs を出力
+# → dist/cli/main.cjs, dist/mcp/server.cjs を出力
 ```
 
 ### Windows 向け standalone exe

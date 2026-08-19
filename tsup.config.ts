@@ -6,7 +6,6 @@ export default defineConfig({
   entry: [
     "src/cli/main.ts",
     "src/mcp/server.ts",
-    "src/webhook/server.ts",
   ],
   format: ["cjs"],
   platform: "node",

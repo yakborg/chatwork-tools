@@ -9,17 +9,13 @@
   "scripts": {
     "cli": "tsx src/cli/main.ts",
     "mcp": "tsx src/mcp/server.ts",
-    "webhook": "tsx src/webhook/server.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "build": "tsup",
     "build:exe": "pkg dist/mcp/server.cjs --targets node22-win-x64 --public --public-packages \"*\" --output bin/chatwork-mcp.exe"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.105.0",
-    "@hono/node-server": "^2.0.6",
-    "@modelcontextprotocol/sdk": "^1.29.0",
-    "hono": "^4.12.27"
+    "@modelcontextprotocol/sdk": "^1.29.0"
   },
   "devDependencies": {
     "@types/node": "^26.0.0",
