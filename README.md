@@ -20,7 +20,6 @@ pnpm install
 
 ```sh
 export CHATWORK_API_TOKEN=your_token_here
-export ANTHROPIC_API_KEY=your_key_here
 ```
 
 Chatwork API トークンは [Chatwork 設定画面](https://www.chatwork.com/#setting/profile) で取得できます。
