@@ -90,6 +90,19 @@ if [ -z "${scan//[[:space:]]/}" ] && [ "$ncommit" -eq 0 ]; then
   exit 0
 fi
 
+# --- (0) UTF-8 BOM 検知（staged のみ・要件 = ai-policy commands/repo-gate.md）--------
+# Windows 側エディタ由来の BOM 混入を commit 時点で止める。バイナリは git の
+# diff 判定（numstat の追加行数が "-"）で除外。ファイル名は秘匿値ではないので表示する。
+if [ "$mode" = "staged" ] && [ -n "$names" ]; then
+  while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    nadd=$(git -c core.quotePath=false diff --cached --numstat -- "$f" | head -1 | cut -f1)
+    [ "$nadd" = "-" ] && continue
+    head3=$(git show ":$f" 2>/dev/null | head -c 3)
+    [ "$head3" = $'\xef\xbb\xbf' ] && die "UTF-8 BOM 付きファイル: $f（BOM を除去して stage し直す）"
+  done <<<"$names"
+fi
+
 # --- (a) メールアドレス: 構造で拾い、許可形以外を落とす -----------------------
 # 実アドレスをゲートへ登録して通す運用はしない（列挙は網羅を保証できず、登録漏れが素通しする）。
 # **公開リポジトリなので許可は RFC 2606 の予約ドメインだけ**に絞る。gmail 等の独自
