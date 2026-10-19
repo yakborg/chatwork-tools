@@ -24,23 +24,19 @@ export CHATWORK_API_TOKEN=your_token_here
 
 Chatwork API トークンは [Chatwork 設定画面](https://www.chatwork.com/#setting/profile) で取得できます。
 
-### 秘匿ゲートの有効化（clone 後に必ず）
+### 秘匿ゲート
 
 **このリポジトリは公開です。ゲートは push 自動化のためではなく、漏洩防止のために入れています。**
 API トークンや実メールアドレスが commit に混ざったまま push されると、履歴を書き換えても
 fork・既存 clone・各種キャッシュには残り、実質的に取り消せません。
 
-`core.hooksPath` は clone に付いてこないので、clone のたびに設定が要ります。
-
-```bash
-git config core.hooksPath tools/hooks
-install -m 600 tools/gate-patterns.example ~/.secrets/gate-patterns  # 具体値を追記
-```
+ゲートはこのリポジトリの中ではなく、作業機の全体設定（`~/.gitconfig` の `core.hooksPath`）から
+呼ばれる 1 本のプログラムです。clone 先で同じ検査を効かせるには、自分の環境に同じ仕組みを入れてください。
 
 - pre-commit は staged の追加行とファイル名を、pre-push は送出する commit すべての追加行を検査します
 - 検出は構造で行います（メール形・32 桁 hex の API トークン形・OAuth client_id）。
   許可するのは RFC 2606 の予約ドメイン（`example.com` / `.org` / `.net` / `.test` など）だけです。
-  独自の placeholder を通したい場合は、根拠をこの README に書いてから許可リストへ足してください
+  独自の placeholder を通したい場合は、根拠をこの README に書いてからゲートの設定（この repo の欄）へ足してください
 - 許可リストに入れている例外は現在 1 つだけです。**`git@github.com`** — clone 手順に必ず出る
   SSH の固定 URL で、個人アドレスではありません。完全一致でのみ通すので、
   `git@github.com.<別ドメイン>` のように後ろに何か付いた形は落ちます
